@@ -5,6 +5,7 @@ use chrono::{
 };
 use crate::error::Error;
 
+#[derive(Debug)]
 pub struct Message {
     pub id: Uuid,
     timestamp: DateTime<Utc>,
@@ -27,6 +28,7 @@ impl Message {
     }
 }
 
+#[derive(Debug)]
 pub struct Salon {
     pub id: Uuid,
     created_at: DateTime<Utc>,
@@ -43,9 +45,23 @@ impl Salon {
             messages: Vec::new(),
         }
     }
+    
+    pub fn get_id(&self) -> &Uuid {
+        &self.id
+    }
 
     pub fn add_user(&mut self, user: Uuid) {
         self.users.push(user);
+    }
+
+    pub fn remove_user(&mut self, user: &Uuid) -> Result<(), Error>  {
+        match self.users.iter().enumerate().find(|&u| u.1 == user) {
+            Some(u) => {
+                self.users.remove(u.0);
+                Ok(())
+            }
+            None => Err(Error::MissedUser)
+        }
     }
 
     pub fn add_message(&mut self, message: Message) -> Result<(), Error> {
