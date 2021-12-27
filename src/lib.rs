@@ -4,16 +4,22 @@ mod error;
 use crate::utils::*;
 use uuid::Uuid;
 use crate::error::Error;
+use mongodb::Client;
 
 #[derive(Debug)]
 pub struct ChatManager {
+    connection: Client,
     list_salon: Vec<Salon>,
 }
 
 impl ChatManager {
-    pub fn new() -> Self {
+    pub fn new(connection: Client) -> Self {
+        let db = connection.database("chat");
+        let collection = db.collection::<Salon>("Salon");
+        
         ChatManager {
             list_salon: Vec::new(),
+            connection: connection,
         }
     }
 
