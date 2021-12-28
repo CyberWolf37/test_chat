@@ -9,5 +9,9 @@ edition = "2018"
 websocket = "0.24.0"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 chrono = "0.4.19"
-mongodb = "2.1.0"
 serde = "1.0.132"
+
+[dependencies.mongodb]
+version = "2.1.0"
+default-features = false
+features = ["sync"]
