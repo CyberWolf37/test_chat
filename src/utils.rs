@@ -8,11 +8,22 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Message {
+    #[serde(with = "uuid_to_string")]
     pub id: Uuid,
     #[serde(with = "my_date_format")]
     timestamp: DateTime<Utc>,
     core: String,
     pub user_id: Uuid,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MessageTest {
+    core: String,
+    id: u32,
+}
+
+mod uuid_to_string {
+    use serde::{self, Deserialize, Serializer, Deserializer};
 }
 
 mod my_date_format {

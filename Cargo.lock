@@ -1713,6 +1713,7 @@ dependencies = [
 name = "serveur_chat"
 version = "0.1.0"
 dependencies = [
+ "bson",
  "chrono",
  "mongodb",
  "serde",

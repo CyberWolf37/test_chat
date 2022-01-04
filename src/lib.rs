@@ -8,6 +8,7 @@ use mongodb::{
     sync::Client,
     sync::Collection,
     bson::doc,
+    bson,
     options::FindOptions,
 };
 
@@ -52,41 +53,46 @@ impl ChatManager {
     }
 
     pub fn delete_user(&mut self, salon: &Uuid, user: &Uuid) -> Result<(), Error> {
-        let salon = self.list_salon.iter_mut().enumerate().find(|s| s.1.id == *salon);
+        let filter = doc! {"id": salon.to_string()};
+        let update = doc! { "&pull" : {"users" : { "&eq" : user.to_string()}}};
+        let salon_db = self.connection.update_one(filter, update, None);
 
-        match salon {
-            Some(s) => {
-                s.1.remove_user(user)
-            }
-            None => {
+        match salon_db {
+            Ok(_) => Ok(()),
+            Err(er) => {
+                eprintln!("Error during deleting user :{}",er);
                 Err(Error::MissedSalon)
             }
         }
     }
 
     pub fn delete_salon(&mut self, salon: &Uuid) -> Result<(), Error> {
-        let salon = self.list_salon.iter().enumerate().find(|s| s.1.id == *salon);
+        let filter = doc! {"id": salon.to_string()};
+        let salon_db = self.connection.delete_one(filter, None);
 
-        match salon {
-            Some(s) => {
-                self.list_salon.remove(s.0);
-                Ok(())
-            }
-            None => {
+        match salon_db {
+            Ok(_) => Ok(()),
+            Err(er) => {
+                eprintln!("Error during deleting Salon :{}",er);
                 Err(Error::MissedSalon)
             }
         }
     }
 
     pub fn send_message(&mut self, salon: &Uuid, message: Message) -> Result<(), Error> {
-        let salon = self.list_salon.iter_mut().find(|s| s.id == *salon);
+        let filter = doc! {"&and" : [ {"id": salon.to_string()} , {"users": { "&eq": message.id.to_string() }}]};
+        let doc = utils::MessageTest {
+            core: "hello world".to_string(),
+            id: 32,
+        };
+        let update = doc! { "&push" : {"messages" : doc }};
+        let salon_db = self.connection.update_one(filter, update, None);
 
-        match salon {
-            Some(s) => {
-                s.add_message(message)
-            }
-            None => {
-                Err(Error::UnAuthorizedClient)
+        match salon_db {
+            Ok(_) => Ok(()),
+            Err(er) => {
+                eprintln!("Error during deleting user :{}",er);
+                Err(Error::MissedSalon)
             }
         }
     }
