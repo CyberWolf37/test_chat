@@ -38,7 +38,7 @@ impl ChatManager {
     }
 
     pub fn add_user(&mut self, salon: &ObjectId, user: &ObjectId) -> Result<(), Error> {
-        let filter = doc! { "$and" : [ {"_id": salon}, { "users": { "$elemMatch": { "$not" : {"$eq" : user} } } } ] };
+        let filter = doc! { "$and" : [ {"_id": salon}, { "$or": [ { "users": { "$elemMatch": { "$ne" : user} } }, { "users": { "$size": 0 } } ] } ] };
         let update = doc! { "$push" : {"users" : user }};
         let salon_db = self.connection.update_one(filter, update, None);
 
@@ -79,7 +79,7 @@ impl ChatManager {
     }
 
     pub fn send_message(&mut self, salon: &ObjectId, message: Message) -> Result<(), Error> {
-        let filter = doc! {"$and" : [ {"_id": salon} , {"users": { "$eq": message.id }}]};
+        let filter = doc! {"$and" : [ {"_id": salon} , {"users": { "$elemMatch": { "$eq" : message.user_id}}}]};
         let doc = bson::to_document(&message).expect("Failed to parse Message to Document");
         let update = doc! { "$push" : {"messages" : doc }};
         let salon_db = self.connection.update_one(filter, update, None);
