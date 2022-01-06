@@ -9,7 +9,7 @@ edition = "2018"
 websocket = "0.24.0"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 chrono = "0.4.19"
-serde = "1.0.132"
+serde = { version = "1.0.132", features = ["derive"] }
 bson = "2.0.0"
 
 [dependencies.mongodb]

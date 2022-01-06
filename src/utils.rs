@@ -5,25 +5,22 @@ use chrono::{
 };
 use crate::error::Error;
 use serde::{Deserialize, Serialize};
+use mongodb::bson::oid::ObjectId;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Message {
-    #[serde(with = "uuid_to_string")]
-    pub id: Uuid,
+    #[serde(rename(serialize = "_id"))]
+    pub id: ObjectId,
     #[serde(with = "my_date_format")]
     timestamp: DateTime<Utc>,
     core: String,
-    pub user_id: Uuid,
+    pub user_id: ObjectId,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MessageTest {
     core: String,
     id: u32,
-}
-
-mod uuid_to_string {
-    use serde::{self, Deserialize, Serializer, Deserializer};
 }
 
 mod my_date_format {
@@ -69,48 +66,49 @@ mod my_date_format {
 }
 
 pub trait ChatClient {
-    fn getUuid(&self) -> &uuid::Uuid;
+    fn getUuid(&self) -> &ObjectId;
 }
 
 impl Message {
-    pub fn new(user_id: Uuid, core: String) -> Self {
+    pub fn new(user_id: ObjectId, core: String) -> Self {
         Message {
-            id: Uuid::new_v4(),
+            id: ObjectId::new(),
             timestamp: Utc::now(),
             core: core,
-            user_id: user_id
+            user_id: user_id,
         }
     }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Salon {
-    pub id: Uuid,
+    #[serde(rename(serialize = "_id"))]
+    pub id: ObjectId,
     #[serde(with = "my_date_format")]
     created_at: DateTime<Utc>,
-    users: Vec<Uuid>,
+    users: Vec<ObjectId>,
     messages: Vec<Message>,
 }
 
 impl Salon {
     pub fn new() -> Self {
         Salon { 
-            id: Uuid::new_v4(),
+            id: ObjectId::new(),
             created_at: Utc::now(),
             users: Vec::new(),
             messages: Vec::new(),
         }
     }
     
-    pub fn get_id(&self) -> &Uuid {
+    pub fn get_id(&self) -> &ObjectId {
         &self.id
     }
 
-    pub fn add_user(&mut self, user: Uuid) {
+    pub fn add_user(&mut self, user: ObjectId) {
         self.users.push(user);
     }
 
-    pub fn remove_user(&mut self, user: &Uuid) -> Result<(), Error>  {
+    pub fn remove_user(&mut self, user: &ObjectId) -> Result<(), Error>  {
         match self.users.iter().enumerate().find(|&u| u.1 == user) {
             Some(u) => {
                 self.users.remove(u.0);
@@ -133,7 +131,7 @@ impl Salon {
         self.messages
     }
 
-    pub fn has_user(&self, user: &Uuid) -> bool {
+    pub fn has_user(&self, user: &ObjectId) -> bool {
         match self.users.iter().find(|&&u| u == *user) {
             Some(_) => true,
             None => false,

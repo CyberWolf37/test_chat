@@ -8,7 +8,7 @@ use mongodb::{
     sync::Client,
     sync::Collection,
     bson::doc,
-    bson,
+    bson::oid::ObjectId,
     options::FindOptions,
 };
 
@@ -29,18 +29,17 @@ impl ChatManager {
         }
     }
 
-    pub fn add_salon(&mut self) -> Uuid {
+    pub fn add_salon(&mut self) -> ObjectId {
         let salon = Salon::new();
         let salon_id = salon.id;
         self.connection.insert_one(salon,None);
-        //self.list_salon.push(salon);
 
         salon_id
     }
 
-    pub fn add_user(&mut self, salon: &Uuid, user: &Uuid) -> Result<(), Error> {
-        let filter = doc! { "&and" : [ {"id": salon.to_string()}, { "users": { "$elemMatch": { "$not" : {"&eq" : user.to_string()} } } } ] };
-        let update = doc! { "&push" : {"users" : user.to_string()}};
+    pub fn add_user(&mut self, salon: &ObjectId, user: &ObjectId) -> Result<(), Error> {
+        let filter = doc! { "$and" : [ {"_id": salon}, { "users": { "$elemMatch": { "$not" : {"$eq" : user} } } } ] };
+        let update = doc! { "$push" : {"users" : user }};
         let salon_db = self.connection.update_one(filter, update, None);
 
         match salon_db {
@@ -52,9 +51,9 @@ impl ChatManager {
         }
     }
 
-    pub fn delete_user(&mut self, salon: &Uuid, user: &Uuid) -> Result<(), Error> {
-        let filter = doc! {"id": salon.to_string()};
-        let update = doc! { "&pull" : {"users" : { "&eq" : user.to_string()}}};
+    pub fn delete_user(&mut self, salon: &ObjectId, user: &ObjectId) -> Result<(), Error> {
+        let filter = doc! {"_id": salon};
+        let update = doc! { "$pull" : {"users" : { "$eq" : user }}};
         let salon_db = self.connection.update_one(filter, update, None);
 
         match salon_db {
@@ -66,8 +65,8 @@ impl ChatManager {
         }
     }
 
-    pub fn delete_salon(&mut self, salon: &Uuid) -> Result<(), Error> {
-        let filter = doc! {"id": salon.to_string()};
+    pub fn delete_salon(&mut self, salon: &ObjectId) -> Result<(), Error> {
+        let filter = doc! {"_id": salon};
         let salon_db = self.connection.delete_one(filter, None);
 
         match salon_db {
@@ -79,13 +78,10 @@ impl ChatManager {
         }
     }
 
-    pub fn send_message(&mut self, salon: &Uuid, message: Message) -> Result<(), Error> {
-        let filter = doc! {"&and" : [ {"id": salon.to_string()} , {"users": { "&eq": message.id.to_string() }}]};
-        let doc = utils::MessageTest {
-            core: "hello world".to_string(),
-            id: 32,
-        };
-        let update = doc! { "&push" : {"messages" : doc }};
+    pub fn send_message(&mut self, salon: &ObjectId, message: Message) -> Result<(), Error> {
+        let filter = doc! {"$and" : [ {"_id": salon} , {"users": { "$eq": message.id }}]};
+        let doc = bson::to_document(&message).expect("Failed to parse Message to Document");
+        let update = doc! { "$push" : {"messages" : doc }};
         let salon_db = self.connection.update_one(filter, update, None);
 
         match salon_db {
