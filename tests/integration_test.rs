@@ -12,6 +12,8 @@ const MONGO_URL: &'static str = "127.0.0.1:27017";
 
 #[test]
 fn it_works() {
+        
+        env_logger::init();
         let mut client_options = ClientOptions::parse(format!("mongodb://{}",MONGO_URL)).expect("Failed to link into DB");
         client_options.app_name = Some("test-app".to_string());
 

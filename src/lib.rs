@@ -4,6 +4,7 @@ mod error;
 use crate::utils::*;
 use uuid::Uuid;
 use crate::error::Error;
+use log::{info, trace, warn, debug};
 use mongodb::{
     sync::Client,
     sync::Collection,
@@ -34,6 +35,7 @@ impl ChatManager {
         let salon_id = salon.id;
         self.connection.insert_one(salon,None);
 
+        info!("Salon id:{} was added",&salon_id);
         salon_id
     }
 
@@ -43,7 +45,10 @@ impl ChatManager {
         let salon_db = self.connection.update_one(filter, update, None);
 
         match salon_db {
-            Ok(_) => Ok(()),
+            Ok(_) => {
+                info!("User id:{} was added in Salon id:{}",&user,&salon);
+                Ok(())
+            },
             Err(er) => {
                 eprintln!("Error during inserting user :{}",er);
                 Err(Error::MissedSalon)
@@ -57,7 +62,10 @@ impl ChatManager {
         let salon_db = self.connection.update_one(filter, update, None);
 
         match salon_db {
-            Ok(_) => Ok(()),
+            Ok(_) => {
+                info!("User id:{} was deleted to Salon id:{}",&user,&salon);
+                Ok(())
+            },
             Err(er) => {
                 eprintln!("Error during deleting user :{}",er);
                 Err(Error::MissedSalon)
@@ -70,7 +78,10 @@ impl ChatManager {
         let salon_db = self.connection.delete_one(filter, None);
 
         match salon_db {
-            Ok(_) => Ok(()),
+            Ok(_) => {
+                info!("Salon id:{} was deleted",&salon);
+                Ok(())
+            },
             Err(er) => {
                 eprintln!("Error during deleting Salon :{}",er);
                 Err(Error::MissedSalon)
@@ -85,7 +96,10 @@ impl ChatManager {
         let salon_db = self.connection.update_one(filter, update, None);
 
         match salon_db {
-            Ok(_) => Ok(()),
+            Ok(_) => {
+                info!("Message send by id:{} in Salon id:{}",&message.user_id,&salon);
+                Ok(())
+            },
             Err(er) => {
                 eprintln!("Error during deleting user :{}",er);
                 Err(Error::MissedSalon)
@@ -101,6 +115,7 @@ impl ChatManager {
         match salon_db {
             Ok(res) => {
                 if let Some(mes) = res {
+                    info!("User id:{} request messages in Salon id:{}",&user,&salon);
                     return Ok(mes.get_messages());
                 }
                 else {
@@ -112,6 +127,10 @@ impl ChatManager {
                 Err(Error::MissedSalon)
             }
         }
+    }
+
+    fn notification_users(&self, salon: &ObjectId) {
+        unimplemented!()
     }
 
 
