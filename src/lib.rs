@@ -93,5 +93,26 @@ impl ChatManager {
         }
     }
 
+    pub fn get_messages_salon(&self, salon: &ObjectId, user: &ObjectId) -> Result<Vec<Message>, Error> {
+        let filter = doc! {"$and" : [ {"_id": salon} , {"users": { "$elemMatch": { "$eq" : user}}}]};
+        let salon_db = self.connection.find_one(filter,None);
+        let _messages: Vec<Message> = Vec::new();
+
+        match salon_db {
+            Ok(res) => {
+                if let Some(mes) = res {
+                    return Ok(mes.get_messages());
+                }
+                else {
+                    Err(Error::MissedSalon)
+                }
+            },
+            Err(er) => {
+                eprintln!("Error during get messages :{}",er);
+                Err(Error::MissedSalon)
+            }
+        }
+    }
+
 
 }

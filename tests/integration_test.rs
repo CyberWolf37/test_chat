@@ -22,4 +22,13 @@ fn it_works() {
         chat.add_user(&salon_id,&user);
         let sms = Message::new(user.clone(), String::from("hello tout le monde"));
         chat.send_message(&salon_id,sms);
+        let get = chat.get_messages_salon(&salon_id,&user);
+        match get {
+                Ok(v) => {
+                        for i in v {
+                                println!("{:?}",i) 
+                        }
+                },
+                Err(_) => {println!("error")}
+        }
 }

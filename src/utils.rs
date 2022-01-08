@@ -9,7 +9,7 @@ use mongodb::bson::oid::ObjectId;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Message {
-    #[serde(rename(serialize = "_id"))]
+    #[serde(rename(serialize = "_id",deserialize = "_id"))]
     pub id: ObjectId,
     #[serde(with = "my_date_format")]
     timestamp: DateTime<Utc>,
@@ -82,7 +82,7 @@ impl Message {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Salon {
-    #[serde(rename(serialize = "_id"))]
+    #[serde(rename(serialize = "_id",deserialize = "_id"))]
     pub id: ObjectId,
     #[serde(with = "my_date_format")]
     created_at: DateTime<Utc>,
