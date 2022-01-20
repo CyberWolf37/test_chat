@@ -16,7 +16,6 @@ use mongodb::{
 #[derive(Debug)]
 pub struct ChatManager {
     connection: Collection<utils::Salon>,
-    list_salon: Vec<Salon>,
 }
 
 impl ChatManager {
@@ -25,13 +24,12 @@ impl ChatManager {
         let collection_salon = db.collection::<Salon>("Salon");
 
         ChatManager {
-            list_salon: Vec::new(),
             connection: collection_salon,
         }
     }
 
-    pub fn add_salon(&mut self) -> ObjectId {
-        let salon = Salon::new();
+    pub fn add_salon(&mut self, name: &str) -> ObjectId {
+        let salon = Salon::new(name);
         let salon_id = salon.id;
         self.connection.insert_one(salon,None);
 
@@ -54,6 +52,10 @@ impl ChatManager {
                 Err(Error::MissedSalon)
             }
         }
+    }
+
+    pub fn add_user_client(&mut self, salon: &ObjectId, user: &impl ChatClient) -> Result<(), Error> {
+        self.add_user(salon, user.getId())
     }
 
     pub fn delete_user(&mut self, salon: &ObjectId, user: &ObjectId) -> Result<(), Error> {

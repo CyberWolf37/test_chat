@@ -19,7 +19,7 @@ fn it_works() {
 
         let mut chat = ChatManager::new(Client::with_options(client_options).expect("Sorry don't have this database"));
 
-        let salon_id = chat.add_salon();
+        let salon_id = chat.add_salon("Solana");
         let user = ObjectId::new();
         chat.add_user(&salon_id,&user);
         let sms = Message::new(user.clone(), String::from("hello tout le monde"));

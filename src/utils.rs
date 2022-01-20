@@ -66,7 +66,7 @@ mod my_date_format {
 }
 
 pub trait ChatClient {
-    fn getUuid(&self) -> &ObjectId;
+    fn getId(&self) -> &ObjectId;
 }
 
 impl Message {
@@ -84,6 +84,7 @@ impl Message {
 pub struct Salon {
     #[serde(rename(serialize = "_id",deserialize = "_id"))]
     pub id: ObjectId,
+    pub name: String,
     #[serde(with = "my_date_format")]
     created_at: DateTime<Utc>,
     users: Vec<ObjectId>,
@@ -91,9 +92,11 @@ pub struct Salon {
 }
 
 impl Salon {
-    pub fn new() -> Self {
+    pub fn new(name: &str) -> Self {
+
         Salon { 
             id: ObjectId::new(),
+            name: String::from(name),
             created_at: Utc::now(),
             users: Vec::new(),
             messages: Vec::new(),
